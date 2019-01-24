@@ -8,5 +8,5 @@ Considering the popularity of PyTorch in academia, we hope this repo can help re
 PyTorch 0.4+
 Python 3.6
 
-# Only support experiment on LIVE IQA right now, other datasets will be added soon!
+Only support experiment on LIVE IQA right now, other datasets will be added soon!
 
