@@ -8,11 +8,13 @@ Considering the popularity of PyTorch in academia, we hope this repo can help re
 PyTorch 0.4+
 Python 3.6
 
+# Usage with default setting
+python DBCNN.py
+
 Only support experiment on LIVE IQA right now, other datasets will be added soon!
 
 
 # Acknowledgement
 https://github.com/HaoMood/bilinear-cnn
 
-# Usage with default setting
-python DBCNN.py
+
