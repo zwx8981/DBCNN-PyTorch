@@ -10,3 +10,7 @@ Python 3.6
 
 Only support experiment on LIVE IQA right now, other datasets will be added soon!
 
+
+# Acknowledgement
+https://github.com/HaoMood/bilinear-cnn
+
