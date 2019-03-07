@@ -82,7 +82,7 @@ class DBCNN(torch.nn.Module):
         W2 = X2.size()[3]
         assert X2.size()[1] == 128        
         
-        if H != H2 | W != W2:
+        if (H != H2) | (W != W2):
             X2 = F.upsample_bilinear(X2,(H,W))
 
         X1 = X1.view(N, 512, H*W)
