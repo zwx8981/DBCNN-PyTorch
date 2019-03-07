@@ -3,7 +3,6 @@ import os
 import torch
 import torchvision
 import torch.nn as nn
-import LIVEFolder
 from SCNN import SCNN
 from PIL import Image
 from scipy import stats
@@ -163,15 +162,24 @@ class DBCNNManager(object):
         ])
             
            
-        if self._options['dataset'] == 'live':          
+        if self._options['dataset'] == 'live':  
+            import LIVEFolder
             train_data = LIVEFolder.LIVEFolder(
                     root=self._path['live'], loader = default_loader, index = self._options['train_index'],
                     transform=train_transforms)
             test_data = LIVEFolder.LIVEFolder(
                     root=self._path['live'], loader = default_loader, index = self._options['test_index'],
                     transform=test_transforms)
+        elif self._options['dataset'] == 'livec':
+            import LIVEChallengeFolder
+            train_data = LIVEChallengeFolder.LIVEChallengeFolder(
+                    root=self._path['livec'], loader = default_loader, index = self._options['train_index'],
+                    transform=train_transforms)
+            test_data = LIVEChallengeFolder.LIVEChallengeFolder(
+                    root=self._path['livec'], loader = default_loader, index = self._options['test_index'],
+                    transform=test_transforms)
         else:
-            raise AttributeError('Only support LIVE right now!')
+            raise AttributeError('Only support LIVE and LIVEC right now!')
         self._train_loader = torch.utils.data.DataLoader(
             train_data, batch_size=self._options['batch_size'],
             shuffle=True, num_workers=0, pin_memory=True)
