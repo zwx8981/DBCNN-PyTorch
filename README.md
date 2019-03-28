@@ -3,6 +3,7 @@ An experimental PyTorch implementation of Deep Bilinear Pooling for Blind Image 
 
 # Purpose
 Considering the popularity of PyTorch in academia, we hope this repo can help reseachers in IQA.
+This repo will be used as an active codebase for integrating advanced technologies for IQA research.
 
 # Requirements
 PyTorch 0.4+
