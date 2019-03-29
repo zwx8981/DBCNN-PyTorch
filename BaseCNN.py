@@ -10,6 +10,8 @@ import random
 import torch.nn.functional as F
 import numpy as np
 from tqdm import tqdm
+from BCNN import BCNN
+from MPNCOV import MPNCOV
 torch.manual_seed(1)
 torch.cuda.manual_seed(1)
 random.seed(1)
@@ -48,12 +50,15 @@ class BaseCNN(nn.Module):
         # Convolution and pooling layers of VGG-16.
         self.basemodel = torchvision.models.resnet18(pretrained=True)
         self.options = options
-
-        # Linear classifier.
-        self.fc = nn.Linear(512, 1)
-
-        if self.options['multitask']:
-            self.fc2 = nn.Linear(512, 4)
+        if self.options['representation'] == 'BCNN':
+            self.representation = BCNN(input_dim=512)
+            self.fc = nn.Linear(512 * 512, 1)
+        elif self.options['representation'] == 'MPNCOV':
+            dr = 64
+            self.representation = MPNCOV(iterNum=5, input_dim=512, dimension_reduction=dr)
+            self.fc = nn.Linear(int(dr*(dr+1)/2), 1)
+        else:
+            self.fc = nn.Linear(512, 1)
         
         if self.options['fc'] == True:
             # Freeze all previous layers.
@@ -63,18 +68,14 @@ class BaseCNN(nn.Module):
             nn.init.kaiming_normal_(self.fc.weight.data)
             if self.fc.bias is not None:
                 nn.init.constant_(self.fc.bias.data, val=0)
-            if self.options['multitask']:
-                nn.init.kaiming_normal_(self.fc2.weight.data)
-                if self.fc2.bias is not None:
-                    nn.init.constant_(self.fc2.bias.data, val=0)
 
         else:
             for param in self.basemodel.conv1.parameters():
                 param.requires_grad = False
             for param in self.basemodel.bn1.parameters():
                 param.requires_grad = False
-            #for param in self.basemodel.layer1.parameters():
-            #    param.requires_grad = False
+            for param in self.basemodel.layer1.parameters():
+                param.requires_grad = False
             #for param in self.basemodel.layer2.parameters():
             #    param.requires_grad = False
             #for param in self.basemodel.layer3.parameters():
@@ -92,16 +93,16 @@ class BaseCNN(nn.Module):
         X = self.basemodel.layer2(X)
         X = self.basemodel.layer3(X)
         X = self.basemodel.layer4(X)
-        X = self.basemodel.avgpool(X)
-        X = X.squeeze(2).squeeze(2)
-        #X = torch.mean(torch.mean(X4,2),2)
-        if self.options['multitask']:
-            X1 = self.fc(X)
-            X2 = self.fc2(X)
-            return X1, X2
+        if self.options['representation'] != None:
+            X = self.representation(X)
+            if self.options['representation'] == 'MPNCOV':
+                X = X.squeeze(2)
         else:
-            X = self.fc(X)
-            return X
+            X = self.basemodel.avgpool(X)
+            X = X.squeeze(2).squeeze(2)
+        #X = torch.mean(torch.mean(X4,2),2)
+        X = self.fc(X)
+        return X
 
 
 class TrainManager(object):
@@ -115,7 +116,28 @@ class TrainManager(object):
         self._path = path
 
         # Network.
-        self._net = nn.DataParallel(BaseCNN(self._options), device_ids=[0]).cuda()
+        #self._net = nn.DataParallel(BaseCNN(self._options), device_ids=[0]).cuda()
+        self._net = BaseCNN(self._options)
+
+        # Solver.
+        if self._options['fc'] == True:
+            self._solver = torch.optim.Adam(
+                    self._net.parameters(), lr=self._options['base_lr'],
+                    weight_decay=self._options['weight_decay'])
+            #self._solver = torch.optim.SGD(self._net.parameters(), lr=self._options['base_lr'],
+            #                            momentum=0.9,
+            #                            weight_decay=self._options['weight_decay'], nesterov=True)
+            self._scheduler = torch.optim.lr_scheduler.StepLR(self._solver, step_size=8, gamma=0.1)
+        else:
+            self._solver = torch.optim.Adam(
+                    self._net.parameters(), lr=self._options['base_lr'],
+                    weight_decay=self._options['weight_decay'])
+            #self._solver = torch.optim.SGD(self._net.parameters(), lr=self._options['base_lr'],
+            #                            momentum=0.9,
+            #                            weight_decay=self._options['weight_decay'], nesterov=True)
+            self._scheduler = torch.optim.lr_scheduler.MultiStepLR(self._solver, milestones=[10, 20, 25], gamma=0.1)
+        self._net = torch.nn.DataParallel(self._net, device_ids=[0]).cuda()
+
         if self._options['fc'] == False:
             self._net.load_state_dict(torch.load(path['fc_root']))
 
@@ -127,20 +149,8 @@ class TrainManager(object):
             self._criterion = nn.L1Loss().cuda()
         else:
             self._criterion = nn.SmoothL1Loss().cuda()
-        if self._options['multitask']:
-            self._criterion_cls = nn.CrossEntropyLoss().cuda()
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        # Solver.
-        if self._options['fc'] == True:
-            self._solver = torch.optim.Adam(
-                    self._net.module.fc.parameters(), lr=self._options['base_lr'],
-                    weight_decay=self._options['weight_decay'])
-            self._scheduler = torch.optim.lr_scheduler.StepLR(self._solver, step_size=10, gamma=0.1)
-        else:
-            self._solver = torch.optim.Adam(
-                    self._net.module.parameters(), lr=self._options['base_lr'],
-                    weight_decay=self._options['weight_decay'])
-            self._scheduler = torch.optim.lr_scheduler.MultiStepLR(self._solver, milestones=[8, 16, 24], gamma=0.1)
+
 
         train_transforms = torchvision.transforms.Compose([
             torchvision.transforms.RandomHorizontalFlip(),
@@ -166,7 +176,7 @@ class TrainManager(object):
             train_data, batch_size=self._options['batch_size'],
             shuffle=True, num_workers=12, pin_memory=True)
         self._test_loader = torch.utils.data.DataLoader(
-            test_data, batch_size=1,
+            test_data, batch_size=self._options['batch_size'],
             shuffle=False, num_workers=12, pin_memory=True)
 
     def train(self):
@@ -181,33 +191,29 @@ class TrainManager(object):
             tscores = []
             num_total = 0
             self._scheduler.step()
-            for X, y, b in tqdm(self._train_loader):
+            for X, y in tqdm(self._train_loader):
                 # Data.
                 X = X.to(self.device)
                 y = y.to(self.device)
-                b = b.to(self.device)
                 #X = torch.tensor(X.cuda())
                 #y = torch.tensor(y.cuda())
 
                 # Clear the existing gradients.
                 self._solver.zero_grad()
                 # Forward pass.
-                if self._options['multitask']:
-                    score, cls = self._net(X)
-                    loss = self._criterion(score, y.view(len(score), 1).detach()) + 0.1 * self._criterion_cls(cls, b.detach())
-                else:
-                    score = self._net(X)
-                    loss = self._criterion(score, y.view(len(score), 1).detach())
+                score = self._net(X)
+                loss = self._criterion(score, y.view(len(score), 1).detach())
                 epoch_loss.append(loss.item())
                 # Prediction.
                 num_total += y.size(0)
-                pscores = pscores + score.cpu().tolist()
+                pscores = pscores + score.squeeze(1).cpu().tolist()
                 tscores = tscores + y.cpu().tolist()
                 # Backward pass.
                 loss.backward()
                 self._solver.step()
             train_srcc, _ = stats.spearmanr(pscores, tscores)
-            test_srcc, test_plcc = self._consitency(self._test_loader)
+            with torch.no_grad():
+                test_srcc, test_plcc = self._consitency(self._test_loader)
             if test_srcc > best_srcc:
                 best_srcc = test_srcc
                 best_epoch = t + 1
@@ -230,7 +236,7 @@ class TrainManager(object):
         num_total = 0
         pscores = []
         tscores = []
-        for X, y, _ in tqdm(data_loader):
+        for X, y in tqdm(data_loader):
             # Data.
             X = X.to(self.device)
             y = y.to(self.device)
@@ -238,14 +244,13 @@ class TrainManager(object):
             #y = torch.tensor(y.cuda())
 
             # Prediction.
-            if self._options['multitask']:
-                score, _ = self._net(X)
-            else:
-                score = self._net(X)
-            pscores = pscores + score[0].cpu().tolist()
+            score = self._net(X)
+            #pscores = pscores + score[0].cpu().tolist() #suitable for batchsize=1
+            pscores = pscores + score.squeeze(1).cpu().tolist()
             tscores = tscores + y.cpu().tolist()
-            
+
             #num_total += y.size(0)
+
         test_srcc, _ = stats.spearmanr(pscores, tscores)
         test_plcc, _ = stats.pearsonr(pscores, tscores)
         self._net.train(True)  # Set the model to training phase
@@ -266,8 +271,8 @@ def main():
                         default=5e-4, help='Weight decay.')
     parser.add_argument('--objective', dest='objective', type=str,
                         default='l2', help='l1 | l2 | smoothl1')
-    parser.add_argument('--multitask', dest='multitask', type=bool,
-                        default=False, help='True or False')
+    parser.add_argument('--representation', dest='representation', type=str,
+                        default=None, help='BCNN | NetVLAD | MPNCOV | None')
     
     args = parser.parse_args()
     if args.base_lr <= 0:
@@ -285,7 +290,7 @@ def main():
         'epochs': args.epochs,
         'weight_decay': args.weight_decay,
         'objective': args.objective,
-        'multitask': args.multitask,
+        'representation': args.representation,
         'fc': [],
         'train_index': [],
         'test_index': []
@@ -317,7 +322,7 @@ def main():
         options['fc'] = True
         options['base_lr'] = 1e-2
         options['batch_size'] = 64
-        options['epochs'] = 20
+        options['epochs'] = 16
         manager = TrainManager(options, path)
         best_srcc = manager.train()
     
