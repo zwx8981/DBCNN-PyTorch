@@ -18,9 +18,6 @@ If you want to re-train the SCNN, you still need Matlab and original repo https:
 
 python SCNN.py
 
-# TODO:
-Retraining SCNN without batchnorm layers.
-
 # Acknowledgement
 https://github.com/HaoMood/bilinear-cnn
 
