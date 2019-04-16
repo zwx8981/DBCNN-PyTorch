@@ -21,7 +21,7 @@ print(model)
 ckpt = "your path of the checkpoint file"
 image_name = "your path of test image"
 checkpoint = torch.load(ckpt)
-model.load_state_dict(checkpoint['state_dict'])
+model.load_state_dict(checkpoint)
 
 model.eval()
 
