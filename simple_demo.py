@@ -23,11 +23,14 @@ image_name = "your path of test image"
 checkpoint = torch.load(ckpt)
 model.load_state_dict(checkpoint['state_dict'])
 
+model.eval()
+
 I = Image.open(image_name)
 I = test_transform(I)
 I = torch.unsqueeze(I, dim=0)
 I = I.to(device)
-score = model(I)
+with torch.no_grad():
+    score = model(I)
 
 format_str = 'Prediction = %.4f'
 print(format_str % score)
