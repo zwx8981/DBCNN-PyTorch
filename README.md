@@ -1,5 +1,5 @@
 # DBCNN-Pytorch
-An experimental PyTorch implementation of Deep Bilinear Pooling for Blind Image Quality Assessment.
+An experimental PyTorch implementation of Blind Image Quality Assessment Using A Deep Bilinear Convolutional Neural Network.
 
 # Purpose
 Considering the popularity of PyTorch in academia, we hope this repo can help reseachers in IQA.
