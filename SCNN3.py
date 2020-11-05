@@ -19,6 +19,12 @@ torch.cuda.manual_seed_all(0)
 # os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 def pil_loader(path):
+    """
+    Convert a pil image to pil.
+
+    Args:
+        path: (str): write your description
+    """
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         img = Image.open(f)
@@ -26,6 +32,12 @@ def pil_loader(path):
 
 
 def accimage_loader(path):
+    """
+    Return an image loader.
+
+    Args:
+        path: (str): write your description
+    """
     import accimage
     try:
         return accimage.Image(path)
@@ -35,6 +47,12 @@ def accimage_loader(path):
 
 
 def default_loader(path):
+    """
+    Return the default loader.
+
+    Args:
+        path: (str): write your description
+    """
     from torchvision import get_image_backend
     if get_image_backend() == 'accimage':
         return accimage_loader(path)
@@ -46,6 +64,12 @@ IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif']
 
 
 def weight_init(net):
+    """
+    Initialize the weight.
+
+    Args:
+        net: (todo): write your description
+    """
     for m in net.modules():
         if isinstance(m, nn.Conv2d):
             nn.init.kaiming_normal_(m.weight.data, nonlinearity='relu')
@@ -75,6 +99,20 @@ class BasicBlock(nn.Module):
 
     def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
                  base_width=64, dilation=1, norm_layer=None):
+        """
+        Initialize layer layer.
+
+        Args:
+            self: (todo): write your description
+            inplanes: (todo): write your description
+            planes: (todo): write your description
+            stride: (int): write your description
+            downsample: (todo): write your description
+            groups: (list): write your description
+            base_width: (str): write your description
+            dilation: (todo): write your description
+            norm_layer: (int): write your description
+        """
         super(BasicBlock, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
@@ -92,6 +130,13 @@ class BasicBlock(nn.Module):
         self.stride = stride
 
     def forward(self, x):
+        """
+        Forward computation.
+
+        Args:
+            self: (todo): write your description
+            x: (todo): write your description
+        """
         identity = x
 
         out = self.conv1(x)
@@ -159,6 +204,17 @@ class SCNN(nn.Module):
 
 
     def _make_layer(self, block, planes, blocks, stride=1, dilate=False):
+        """
+        Create a layer.
+
+        Args:
+            self: (todo): write your description
+            block: (todo): write your description
+            planes: (todo): write your description
+            blocks: (todo): write your description
+            stride: (int): write your description
+            dilate: (str): write your description
+        """
         norm_layer = self._norm_layer
         downsample = None
         previous_dilation = self.dilation
@@ -183,6 +239,13 @@ class SCNN(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, X):
+        """
+        Forward computation.
+
+        Args:
+            self: (todo): write your description
+            X: (todo): write your description
+        """
         #        return X
         X = self.shared_features(X)
         X = self.synthetic_head1(X)

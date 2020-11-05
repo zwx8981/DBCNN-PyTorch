@@ -11,6 +11,13 @@ import random
 
 
 def getFileName(path, suffix):
+    """
+    Return a list of the given path.
+
+    Args:
+        path: (str): write your description
+        suffix: (str): write your description
+    """
     filename = []
     f_list = os.listdir(path)
     # print f_list
@@ -20,6 +27,13 @@ def getFileName(path, suffix):
     return filename
 
 def getDistortionTypeFileName(path, num):
+    """
+    Returns a filename for a file name
+
+    Args:
+        path: (str): write your description
+        num: (int): write your description
+    """
     filename = []
     index = 1
     for i in range(0,num):
@@ -33,6 +47,17 @@ def getDistortionTypeFileName(path, num):
 class LIVEFolder(data.Dataset):
 
     def __init__(self, root, loader, index, transform=None, target_transform=None):
+        """
+        Initialize the reference file.
+
+        Args:
+            self: (todo): write your description
+            root: (str): write your description
+            loader: (todo): write your description
+            index: (int): write your description
+            transform: (str): write your description
+            target_transform: (todo): write your description
+        """
 
         self.root = root
         self.loader = loader
@@ -97,6 +122,12 @@ class LIVEFolder(data.Dataset):
 
 
     def __len__(self):
+        """
+        Returns the length of the record.
+
+        Args:
+            self: (todo): write your description
+        """
         length = len(self.samples)
         return length
 
@@ -104,6 +135,12 @@ class LIVEFolder(data.Dataset):
 
 
 def pil_loader(path):
+    """
+    Convert a pil image to pil.
+
+    Args:
+        path: (str): write your description
+    """
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         img = Image.open(f)
@@ -111,6 +148,12 @@ def pil_loader(path):
 
 
 def accimage_loader(path):
+    """
+    Return an image loader.
+
+    Args:
+        path: (str): write your description
+    """
     import accimage
     try:
         return accimage.Image(path)
@@ -120,6 +163,12 @@ def accimage_loader(path):
 
 
 def default_loader(path):
+    """
+    Return the default loader.
+
+    Args:
+        path: (str): write your description
+    """
     from torchvision import get_image_backend
     if get_image_backend() == 'accimage':
         return accimage_loader(path)

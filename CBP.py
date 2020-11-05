@@ -16,6 +16,15 @@ class CBP(nn.Module):
          input_dim: the #channel of input feature
      """
      def __init__(self, thresh=1e-8, projDim=8192, input_dim=512):
+         """
+         Initialize the graph.
+
+         Args:
+             self: (todo): write your description
+             thresh: (float): write your description
+             projDim: (int): write your description
+             input_dim: (int): write your description
+         """
          super(CBP, self).__init__()
          self.thresh = thresh
          self.projDim = projDim
@@ -41,14 +50,35 @@ class CBP(nn.Module):
              torch.sparse.FloatTensor(indices2, self.weights_[1], torch.Size([self.input_dim, self.output_dim])).to_dense(),
          ]
      def _signed_sqrt(self, x):
+         """
+         Return the signed error.
+
+         Args:
+             self: (todo): write your description
+             x: (array): write your description
+         """
          x = torch.mul(x.sign(), torch.sqrt(x.abs()+self.thresh))
          return x
 
      def _l2norm(self, x):
+         """
+         Normalize x.
+
+         Args:
+             self: (todo): write your description
+             x: (array): write your description
+         """
          x = nn.functional.normalize(x)
          return x
 
      def forward(self, x):
+         """
+         Forward computation.
+
+         Args:
+             self: (todo): write your description
+             x: (todo): write your description
+         """
          bsn = 1
          batchSize, dim, h, w = x.data.shape
          x_flat = x.permute(0, 2, 3, 1).contiguous().view(-1, dim)  # batchsize,h, w, dim,

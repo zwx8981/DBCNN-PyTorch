@@ -16,6 +16,12 @@ torch.cuda.manual_seed_all(0)
 #os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 def pil_loader(path):
+    """
+    Convert a pil image to pil.
+
+    Args:
+        path: (str): write your description
+    """
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         img = Image.open(f)
@@ -23,6 +29,12 @@ def pil_loader(path):
 
 
 def accimage_loader(path):
+    """
+    Return an image loader.
+
+    Args:
+        path: (str): write your description
+    """
     import accimage
     try:
         return accimage.Image(path)
@@ -32,6 +44,12 @@ def accimage_loader(path):
 
 
 def default_loader(path):
+    """
+    Return the default loader.
+
+    Args:
+        path: (str): write your description
+    """
     from torchvision import get_image_backend
     if get_image_backend() == 'accimage':
         return accimage_loader(path)
@@ -41,6 +59,12 @@ def default_loader(path):
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif']
 
 def weight_init(net): 
+    """
+    Initialize the weight.
+
+    Args:
+        net: (todo): write your description
+    """
     for m in net.modules():    
         if isinstance(m, nn.Conv2d):         
             nn.init.kaiming_normal_(m.weight.data,nonlinearity='relu')
@@ -90,6 +114,13 @@ class SCNN(nn.Module):
         weight_init(self.classifier)
 
     def forward(self, X):
+        """
+        Forward computation.
+
+        Args:
+            self: (todo): write your description
+            X: (todo): write your description
+        """
 #        return X
         N = X.size()[0]
         assert X.size() == (N, 3, 224, 224)
