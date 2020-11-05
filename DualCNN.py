@@ -16,6 +16,12 @@ random.seed(1)
 #os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 def pil_loader(path):
+    """
+    Convert a pil image to pil.
+
+    Args:
+        path: (str): write your description
+    """
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         img = Image.open(f)
@@ -23,6 +29,12 @@ def pil_loader(path):
 
 
 def accimage_loader(path):
+    """
+    Return an image loader.
+
+    Args:
+        path: (str): write your description
+    """
     import accimage
     try:
         return accimage.Image(path)
@@ -32,6 +44,12 @@ def accimage_loader(path):
 
 
 def default_loader(path):
+    """
+    Return the default loader.
+
+    Args:
+        path: (str): write your description
+    """
     from torchvision import get_image_backend
     if get_image_backend() == 'accimage':
         return accimage_loader(path)
@@ -259,6 +277,13 @@ class TrainManager(object):
         return best_srcc
 
     def _consitency(self, data_loader):
+        """
+        Consitency.
+
+        Args:
+            self: (todo): write your description
+            data_loader: (todo): write your description
+        """
         self._net.train(False)
         num_total = 0
         pscores = []

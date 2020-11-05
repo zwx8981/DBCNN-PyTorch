@@ -28,6 +28,17 @@ class MPNCOV(nn.Module):
                                will be reduced to 256 or others.
      """
      def __init__(self, iterNum=3, is_sqrt=True, is_vec=True, input_dim=2048, dimension_reduction=None):
+         """
+         Initialize the network.
+
+         Args:
+             self: (todo): write your description
+             iterNum: (int): write your description
+             is_sqrt: (bool): write your description
+             is_vec: (bool): write your description
+             input_dim: (int): write your description
+             dimension_reduction: (str): write your description
+         """
 
          super(MPNCOV, self).__init__()
          self.iterNum=iterNum
@@ -48,6 +59,12 @@ class MPNCOV(nn.Module):
          self._init_weight()
 
      def _init_weight(self):
+         """
+         Initialize the weight.
+
+         Args:
+             self: (todo): write your description
+         """
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
@@ -56,13 +73,41 @@ class MPNCOV(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
      def _cov_pool(self, x):
+         """
+         Return the covance matrix of x.
+
+         Args:
+             self: (todo): write your description
+             x: (todo): write your description
+         """
          return Covpool.apply(x)
      def _sqrtm(self, x):
+         """
+         Return the square root of - thrtm of x.
+
+         Args:
+             self: (todo): write your description
+             x: (array): write your description
+         """
          return Sqrtm.apply(x, self.iterNum)
      def _triuvec(self, x):
+         """
+         Triuvecuvec of x.
+
+         Args:
+             self: (todo): write your description
+             x: (array): write your description
+         """
          return Triuvec.apply(x)
 
      def forward(self, x):
+         """
+         Forward computation.
+
+         Args:
+             self: (todo): write your description
+             x: (todo): write your description
+         """
          if self.dr is not None:
              x = self.conv_dr_block(x)
          x = self._cov_pool(x)
@@ -76,6 +121,13 @@ class MPNCOV(nn.Module):
 class Covpool(Function):
      @staticmethod
      def forward(ctx, input):
+         """
+         Forward computation.
+
+         Args:
+             ctx: (todo): write your description
+             input: (todo): write your description
+         """
          x = input
          batchSize = x.data.shape[0]
          dim = x.data.shape[1]
@@ -90,6 +142,13 @@ class Covpool(Function):
          return y
      @staticmethod
      def backward(ctx, grad_output):
+         """
+         Backward backward backward pass
+
+         Args:
+             ctx: (todo): write your description
+             grad_output: (bool): write your description
+         """
          input,I_hat = ctx.saved_tensors
          x = input
          batchSize = x.data.shape[0]
@@ -106,6 +165,14 @@ class Covpool(Function):
 class Sqrtm(Function):
      @staticmethod
      def forward(ctx, input, iterN):
+         """
+         Perform forward
+
+         Args:
+             ctx: (todo): write your description
+             input: (todo): write your description
+             iterN: (int): write your description
+         """
          x = input
          batchSize = x.data.shape[0]
          dim = x.data.shape[1]
@@ -133,6 +200,13 @@ class Sqrtm(Function):
          return y
      @staticmethod
      def backward(ctx, grad_output):
+         """
+         Backward computation.
+
+         Args:
+             ctx: (todo): write your description
+             grad_output: (bool): write your description
+         """
          input, A, ZY, normA, Y, Z = ctx.saved_tensors
          iterN = ctx.iterN
          x = input
@@ -172,6 +246,13 @@ class Sqrtm(Function):
 class Triuvec(Function):
      @staticmethod
      def forward(ctx, input):
+         """
+         Forward computation.
+
+         Args:
+             ctx: (todo): write your description
+             input: (todo): write your description
+         """
          x = input
          batchSize = x.data.shape[0]
          dim = x.data.shape[1]
@@ -185,6 +266,13 @@ class Triuvec(Function):
          return y
      @staticmethod
      def backward(ctx, grad_output):
+         """
+         Perform backward backward backward pass.
+
+         Args:
+             ctx: (todo): write your description
+             grad_output: (bool): write your description
+         """
          input,index = ctx.saved_tensors
          x = input
          batchSize = x.data.shape[0]
@@ -196,10 +284,29 @@ class Triuvec(Function):
          return grad_input
 
 def CovpoolLayer(var):
+    """
+    Applies a covpool to a variable.
+
+    Args:
+        var: (array): write your description
+    """
     return Covpool.apply(var)
 
 def SqrtmLayer(var, iterN):
+    """
+    Compute the value.
+
+    Args:
+        var: (array): write your description
+        iterN: (int): write your description
+    """
     return Sqrtm.apply(var, iterN)
 
 def TriuvecLayer(var):
+    """
+    Return a vector of a vector.
+
+    Args:
+        var: (array): write your description
+    """
     return Triuvec.apply(var)

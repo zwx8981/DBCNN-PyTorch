@@ -25,6 +25,17 @@ def getFileName(path, suffix):
 class Koniq_10k(data.Dataset):
 
     def __init__(self, root, loader, index, transform=None, target_transform=None):
+        """
+        Initialize the csv file.
+
+        Args:
+            self: (todo): write your description
+            root: (str): write your description
+            loader: (todo): write your description
+            index: (int): write your description
+            transform: (str): write your description
+            target_transform: (todo): write your description
+        """
 
         self.root = root
         self.loader = loader
@@ -67,11 +78,23 @@ class Koniq_10k(data.Dataset):
         return sample, target
 
     def __len__(self):
+        """
+        Returns the length of the record.
+
+        Args:
+            self: (todo): write your description
+        """
         length = len(self.samples)
         return length
 
 
 def pil_loader(path):
+    """
+    Convert a pil image to pil.
+
+    Args:
+        path: (str): write your description
+    """
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         img = Image.open(f)
@@ -80,6 +103,12 @@ def pil_loader(path):
 
 
 def default_loader(path):
+    """
+    Return the default loader.
+
+    Args:
+        path: (str): write your description
+    """
     from torchvision import get_image_backend
     if get_image_backend() == 'accimage':
         return accimage_loader(path)

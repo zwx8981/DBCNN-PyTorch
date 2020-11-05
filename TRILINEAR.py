@@ -5,11 +5,26 @@ import torch.nn.functional as F
 class TRILINEAR(nn.Module):
 
      def __init__(self, is_vec, input_dim=2048):
+         """
+         Initialize the inputs.
+
+         Args:
+             self: (todo): write your description
+             is_vec: (bool): write your description
+             input_dim: (int): write your description
+         """
          super(TRILINEAR, self).__init__()
          #self.thresh = thresh
          self.is_vec = is_vec
          self.output_dim = input_dim
      def _trilinearpool(self, x):
+         """
+         Trilinear interpolation.
+
+         Args:
+             self: (todo): write your description
+             x: (array): write your description
+         """
          batchSize, dim, h, w = x.data.shape
          x = x.reshape(batchSize, dim, h * w)
          #x = 1. / (h * w) * x.bmm(x.transpose(1, 2))
@@ -28,6 +43,13 @@ class TRILINEAR(nn.Module):
      #    return x
 
      def forward(self, x):
+         """
+         Forward computation of x.
+
+         Args:
+             self: (todo): write your description
+             x: (todo): write your description
+         """
          x = self._trilinearpool(x)
          #x = self._signed_sqrt(x)
          if self.is_vec:

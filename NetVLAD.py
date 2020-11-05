@@ -29,6 +29,12 @@ class NetVLAD(nn.Module):
         self._init_params()
 
     def _init_params(self):
+        """
+        Initialize parameters.
+
+        Args:
+            self: (todo): write your description
+        """
         self.conv.weight = nn.Parameter(
             (2.0 * self.alpha * self.centroids).unsqueeze(-1).unsqueeze(-1)
         )
@@ -37,6 +43,13 @@ class NetVLAD(nn.Module):
         )
 
     def forward(self, x):
+        """
+        Forward computation. forward.
+
+        Args:
+            self: (todo): write your description
+            x: (todo): write your description
+        """
         N, C = x.shape[:2]
 
         if self.normalize_input:

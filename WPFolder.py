@@ -21,6 +21,12 @@ def has_file_allowed_extension(filename, extensions):
 
 
 def find_classes(dir):
+    """
+    Find classes in dir.
+
+    Args:
+        dir: (str): write your description
+    """
     classes = [d for d in os.listdir(dir) if os.path.isdir(os.path.join(dir, d))]
     classes.sort()
     class_to_idx = {classes[i]: i for i in range(len(classes))}
@@ -28,6 +34,16 @@ def find_classes(dir):
 
 
 def make_dataset(dir, class_to_idx, extensions, train, ratio):
+    """
+    Make a list of images.
+
+    Args:
+        dir: (str): write your description
+        class_to_idx: (str): write your description
+        extensions: (str): write your description
+        train: (bool): write your description
+        ratio: (str): write your description
+    """
     images = []
     dir = os.path.expanduser(dir)
     for target in sorted(os.listdir(dir)):
@@ -52,6 +68,19 @@ def make_dataset(dir, class_to_idx, extensions, train, ratio):
 class WPFolder(data.Dataset):
 
     def __init__(self, root, loader, extensions, transform=None, target_transform=None, train = True, ratio = 0.8):
+        """
+        Initialize the target dataset.
+
+        Args:
+            self: (todo): write your description
+            root: (str): write your description
+            loader: (todo): write your description
+            extensions: (todo): write your description
+            transform: (str): write your description
+            target_transform: (todo): write your description
+            train: (todo): write your description
+            ratio: (todo): write your description
+        """
         classes, class_to_idx = find_classes(root)
         samples = make_dataset(root, class_to_idx, extensions, train, ratio)
         if len(samples) == 0:
@@ -88,9 +117,21 @@ class WPFolder(data.Dataset):
 
 
     def __len__(self):
+        """
+        Returns the number of samples.
+
+        Args:
+            self: (todo): write your description
+        """
         return len(self.samples)
 
     def __repr__(self):
+        """
+        Return a human - readable representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         fmt_str = 'Dataset ' + self.__class__.__name__ + '\n'
         fmt_str += '    Number of datapoints: {}\n'.format(self.__len__())
         fmt_str += '    Root Location: {}\n'.format(self.root)
@@ -106,6 +147,12 @@ IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif']
 
 
 def pil_loader(path):
+    """
+    Convert a pil image to pil.
+
+    Args:
+        path: (str): write your description
+    """
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         img = Image.open(f)
@@ -113,6 +160,12 @@ def pil_loader(path):
 
 
 def accimage_loader(path):
+    """
+    Return an image loader.
+
+    Args:
+        path: (str): write your description
+    """
     import accimage
     try:
         return accimage.Image(path)
@@ -122,6 +175,12 @@ def accimage_loader(path):
 
 
 def default_loader(path):
+    """
+    Return the default loader.
+
+    Args:
+        path: (str): write your description
+    """
     from torchvision import get_image_backend
     if get_image_backend() == 'accimage':
         return accimage_loader(path)
