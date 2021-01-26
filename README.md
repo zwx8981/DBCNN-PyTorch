@@ -16,6 +16,18 @@ If you want to re-train the SCNN, you still need Matlab and original repo https:
 
 python SCNN.py
 
+# Citation
+-
+@article{zhang2020blind,  
+  title={Blind Image Quality Assessment Using A Deep Bilinear Convolutional Neural Network},  
+  author={Zhang, Weixia and Ma, Kede and Yan, Jia and Deng, Dexiang and Wang, Zhou},  
+  journal={IEEE Transactions on Circuits and Systems for Video Technology},  
+  volume={30},  
+  number={1},  
+  pages={36--47},  
+  year={2020}  
+}
+
 # Acknowledgement
 https://github.com/HaoMood/bilinear-cnn
 
