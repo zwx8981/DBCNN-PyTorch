@@ -1,3 +1,4 @@
+
 # DBCNN-Pytorch
 An experimental PyTorch implementation of Blind Image Quality Assessment Using A Deep Bilinear Convolutional Neural Network.
 
@@ -30,4 +31,5 @@ python SCNN.py
 # Acknowledgement
 https://github.com/HaoMood/bilinear-cnn
 
+# A remarkable re-implementation and pre-trained weights are available at https://github.com/chaofengc/IQA-PyTorch. Thanks for their great work !
 
